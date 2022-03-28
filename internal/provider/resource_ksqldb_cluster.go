@@ -167,6 +167,8 @@ func resourceKsqlDbClusterCreate(ctx context.Context, d *schema.ResourceData, m 
 		return append(diags, diag.Errorf("Unexpected API response. Body: %v", resp)...)
 	}
 
+	d.Set("endpoint", resp.Cluster.Endpoint)
+	d.Set("topic_prefix", resp.Cluster.OutputToicPrefix)
 	d.Set("name", resp.Cluster.Name)
 	d.SetId(resp.Cluster.Id)
 
@@ -175,6 +177,53 @@ func resourceKsqlDbClusterCreate(ctx context.Context, d *schema.ResourceData, m 
 
 func resourceKsqlDbClusterRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
+
+	type response struct {
+		Cluster ksqlDbCluster
+		Error   string
+	}
+
+	c := m.(*Client)
+
+	ksqlDbId := d.Id()
+	environment_id := d.Get("environment_id")
+
+	client := &http.Client{Timeout: 10 * time.Second}
+
+	url := fmt.Sprintf("%s/ksqls/%s?account_id=%s", "https://api.confluent.cloud", ksqlDbId, environment_id)
+
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	req.SetBasicAuth(c.apiKey, c.apiSecret)
+	r, err := client.Do(req)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	defer r.Body.Close()
+
+	if r.StatusCode != 200 {
+		return append(diags, diag.Errorf("HTTP request error. Response code: %d", r.StatusCode)...)
+	}
+
+	var resp response
+
+	err = json.NewDecoder(r.Body).Decode(&resp)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if resp.Error != "" {
+		return append(diags, diag.Errorf("Unexpected API response. Body: %v", resp)...)
+	}
+
+	d.Set("endpoint", resp.Cluster.Endpoint)
+	d.Set("topic_prefix", resp.Cluster.OutputToicPrefix)
+	d.Set("name", resp.Cluster.Name)
+	d.SetId(resp.Cluster.Id)
+
 	return diags
 }
 
@@ -185,5 +234,42 @@ func resourceKsqlDbClusterUpdate(ctx context.Context, d *schema.ResourceData, m 
 
 func resourceKsqlDbClusterDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
+
+	c := m.(*Client)
+
+	ksqlDbId := d.Id()
+	environment_id := d.Get("environment_id")
+
+	client := &http.Client{Timeout: 10 * time.Second}
+
+	url := fmt.Sprintf("%s/ksqls/%s?account_id=%s", "https://api.confluent.cloud", ksqlDbId, environment_id)
+
+	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	req.SetBasicAuth(c.apiKey, c.apiSecret)
+	r, err := client.Do(req)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	defer r.Body.Close()
+
+	if r.StatusCode != 200 {
+		return append(diags, diag.Errorf("HTTP request error. Response code: %d", r.StatusCode)...)
+	}
+
+	var resp response
+
+	err = json.NewDecoder(r.Body).Decode(&resp)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if resp.Error != "" {
+		return append(diags, diag.Errorf("Unexpected API response. Body: %v", resp)...)
+	}
+
 	return diags
 }
