@@ -1,3 +1,11 @@
+
+# Issues (Eric Schmidt/Crossbeam fork)
+
+1. API Keys do not properly associate with provided service account, they are associating with the SA that runs terraform instead, possible that call needs the numeric user id for the desired SA, or SAs can't assign rights to other SAs
+2. KSQLDB not yet implemented
+3. Deletes not implemented for APIKey, or Schema Registry
+
+
 # Terraform Provider for Confluent Cloud
 
 The Terraform Confluent Cloud provider is a plugin for Terraform that allows for the lifecycle management of Confluent Cloud resources.

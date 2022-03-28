@@ -17,6 +17,9 @@ package provider
 import (
 	"context"
 	"fmt"
+	"log"
+	"strings"
+
 	cmk "github.com/confluentinc/ccloud-sdk-go-v2/cmk/v2"
 	iamv1 "github.com/confluentinc/ccloud-sdk-go-v2/iam/v1"
 	iam "github.com/confluentinc/ccloud-sdk-go-v2/iam/v2"
@@ -25,8 +28,6 @@ import (
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"log"
-	"strings"
 )
 
 const (
@@ -111,18 +112,21 @@ func New(version string) func() *schema.Provider {
 				},
 			},
 			DataSourcesMap: map[string]*schema.Resource{
+				"confluentcloud_environment":     environmentDataSource(),
 				"confluentcloud_kafka_cluster":   kafkaDataSource(),
 				"confluentcloud_kafka_topic":     kafkaTopicDataSource(),
-				"confluentcloud_environment":     environmentDataSource(),
+				"confluentcloud_schema_registry": dataSourceSchemaRegistry(),
 				"confluentcloud_service_account": serviceAccountDataSource(),
 			},
 			ResourcesMap: map[string]*schema.Resource{
-				"confluentcloud_kafka_cluster":   kafkaResource(),
+				"confluentcloud_apikey":          resourceApiKey(),
 				"confluentcloud_environment":     environmentResource(),
-				"confluentcloud_service_account": serviceAccountResource(),
-				"confluentcloud_kafka_topic":     kafkaTopicResource(),
 				"confluentcloud_kafka_acl":       kafkaAclResource(),
+				"confluentcloud_kafka_cluster":   kafkaResource(),
+				"confluentcloud_kafka_topic":     kafkaTopicResource(),
 				"confluentcloud_role_binding":    roleBindingResource(),
+				"confluentcloud_service_account": serviceAccountResource(),
+				"confluentcloud_schema_registry": resourceSchemaRegistry(),
 			},
 		}
 
