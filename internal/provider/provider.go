@@ -124,6 +124,7 @@ func New(version string) func() *schema.Provider {
 				"confluentcloud_kafka_acl":       kafkaAclResource(),
 				"confluentcloud_kafka_cluster":   kafkaResource(),
 				"confluentcloud_kafka_topic":     kafkaTopicResource(),
+				"confluentcloud_ksqldb_cluster":  resourceKsqlDbCluster(),
 				"confluentcloud_role_binding":    roleBindingResource(),
 				"confluentcloud_service_account": serviceAccountResource(),
 				"confluentcloud_schema_registry": resourceSchemaRegistry(),

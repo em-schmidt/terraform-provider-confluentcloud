@@ -94,7 +94,7 @@ type apiKey struct {
 	UserResourceId         string                 `json:"user_resource_id"`
 }
 
-type responseBody struct {
+type response struct {
 	ApiKey apiKey `json:"api_key"`
 	Error  string
 }
@@ -162,7 +162,7 @@ func resourceApiKeyCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		return append(diags, diag.Errorf("HTTP request error. Response code: %d", r.StatusCode)...)
 	}
 
-	var resp responseBody
+	var resp response
 
 	err = json.NewDecoder(r.Body).Decode(&resp)
 	if err != nil {
