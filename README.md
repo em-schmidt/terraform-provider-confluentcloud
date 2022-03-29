@@ -1,10 +1,21 @@
 
 # Issues (Eric Schmidt/Crossbeam fork)
 
-1. API Keys do not properly associate with provided service account, they are associating with the SA that runs terraform instead, possible that call needs the numeric user id for the desired SA, or SAs can't assign rights to other SAs
-2. KSQLDB not yet implemented
+## open
+
+1. API Keys are not properly associated with provided service account, they are associating with the SA that runs terraform instead. It appears that the call needs the numeric user id for the desired SA to be correctly populated, but the SA doesn't expose this id... so we need to hack that in, likely with a custom data source for SA... this appears to be deprecated functionality that is still required for this particular operation and may be part of the delay in improvements/releases to this provider.
+
+2. Need a wait after api key creation so that we don't try to use an api key before its ready.
+
 3. Deletes not implemented for APIKey, or Schema Registry
 
+4. Need to DRY out all the new resources, they can share a common HTTP client and much of their config, ex: Auth and Content type headers. 
+
+## resolved
+
+~~Need to allow credentialed operations to use ambient credentials: create topic, create acls, etc.~~ Least impact is to use new api-key resource to generate an api-key and use that in the credentials blocks for the required resources.
+
+~~KSQLDB not yet implemented~~
 
 # Terraform Provider for Confluent Cloud
 

@@ -119,6 +119,13 @@ func resourceApiKeyCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	resourceId := d.Get("resource_id").(string)
 	resourceType := d.Get("resource_type").(string)
 	description := d.Get("description").(string)
+	userResourceId := d.Get("owner_id").(string)
+	userId, err := saResourceIdToSaIntegerId(c, userResourceId)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	log.Printf("ERIC: userinfo: rsr %s, id-int: %v", userResourceId, userId)
 
 	client := &http.Client{Timeout: 10 * time.Second}
 
@@ -129,8 +136,8 @@ func resourceApiKeyCreate(ctx context.Context, d *schema.ResourceData, m interfa
 			AccountId:       environmentId,
 			Description:     description,
 			LogicalClusters: []logicalCluster{{Id: resourceId, Type: resourceType}},
-			UserId:          0,
-			UserResourceId:  "sa-gq8no3",
+			UserId:          userId,
+			UserResourceId:  userResourceId,
 		},
 	}
 
