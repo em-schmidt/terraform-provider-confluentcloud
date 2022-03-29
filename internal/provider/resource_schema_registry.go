@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -45,6 +46,9 @@ func resourceSchemaRegistry() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+		},
+		Importer: &schema.ResourceImporter{
+			StateContext: schemaRegistryImport,
 		},
 	}
 }
@@ -234,4 +238,21 @@ func resourceSchemaRegistryDelete(ctx context.Context, d *schema.ResourceData, m
 	var diags diag.Diagnostics
 
 	return diags
+}
+
+func schemaRegistryImport(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+	envIDAndClusterID := d.Id()
+	parts := strings.Split(envIDAndClusterID, "/")
+
+	if len(parts) != 2 {
+		return nil, fmt.Errorf("invalid format for kafka import: expected '<env ID>/<lkc ID>'")
+	}
+
+	environmentId := parts[0]
+	clusterId := parts[1]
+	d.SetId(clusterId)
+	d.Set("environment_id", environmentId)
+	log.Printf("[INFO] Schema Registry import for %s", clusterId)
+
+	return []*schema.ResourceData{d}, nil
 }
